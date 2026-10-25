@@ -17,4 +17,8 @@ public final class EntityCompat {
     public static void makeInvulnerable(Entity entity) {
         entity.setInvulnerable(true);
     }
+
+    public static boolean hasTag(Entity entity, String tag) {
+        return entity.entityTags().contains(tag);
+    }
 }

@@ -313,7 +313,7 @@ public final class BirdManager {
         List<Entity> orphans = new ArrayList<>();
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
-                if (entity instanceof Chicken && entity.entityTags().contains(BIRD_TAG)) {
+                if (entity instanceof Chicken && EntityCompat.hasTag(entity, BIRD_TAG)) {
                     orphans.add(entity);
                 }
             }

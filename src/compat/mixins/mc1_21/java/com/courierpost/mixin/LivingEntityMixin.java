@@ -1,6 +1,7 @@
 package com.courierpost.mixin;
 
 import com.courierpost.bird.BirdManager;
+import com.courierpost.bird.EntityCompat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,7 +23,14 @@ public abstract class LivingEntityMixin {
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return;
         }
-        if (((Entity) (Object) this).entityTags().contains(BirdManager.BIRD_TAG)) {
+        if (EntityCompat.hasTag((Entity) (Object) this, BirdManager.BIRD_TAG)) {
+            info.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+    private void courierpost$ignoreCouriers(LivingEntity target, CallbackInfoReturnable<Boolean> info) {
+        if (EntityCompat.hasTag(target, BirdManager.BIRD_TAG)) {
             info.setReturnValue(false);
         }
     }

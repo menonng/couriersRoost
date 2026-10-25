@@ -1,15 +1,8 @@
 {
   "required": true,
   "package": "com.courierpost.mixin",
-  "compatibilityLevel": "JAVA_25",
-  "mixins": [
-    "ChickenMixin",
-    "LivingEntityMixin",
-    "MobMixin",
-    "MsgCommandMixin",
-    "ServerCommonPacketListenerImplMixin",
-    "TeamMsgCommandMixin"
-  ],
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": ${mixins},
   "injectors": {
     "defaultRequire": 1
   }

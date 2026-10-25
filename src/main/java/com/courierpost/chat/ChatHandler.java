@@ -100,7 +100,7 @@ public final class ChatHandler {
         if (!advancements.award(holder, "sent")) {
             return;
         }
-        if (!server.getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
+        if (!player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
             return;
         }
         for (ServerPlayer viewer : server.getPlayerList().getPlayers()) {

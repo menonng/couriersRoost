@@ -1,6 +1,7 @@
 package com.courierpost.mixin;
 
 import com.courierpost.bird.BirdManager;
+import com.courierpost.bird.EntityCompat;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +18,7 @@ public abstract class ChickenMixin {
     @Inject(method = "aiStep", at = @At("HEAD"))
     private void courierpost$suppressEggs(CallbackInfo info) {
         Entity self = (Entity) (Object) this;
-        if (self.entityTags().contains(BirdManager.BIRD_TAG)) {
+        if (EntityCompat.hasTag(self, BirdManager.BIRD_TAG)) {
             eggTime = Integer.MAX_VALUE;
         }
     }
