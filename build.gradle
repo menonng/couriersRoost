@@ -1,0 +1,70 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+def targets = [
+        "26.1.2": "0.155.3+26.1.2",
+        "26.2"  : "0.161.0+26.2",
+        "26.3"  : "0.161.0+26.3",
+]
+
+def minecraftVersion = (project.findProperty("mc") ?: project.default_minecraft_version).toString()
+if (!targets.containsKey(minecraftVersion)) {
+    throw new GradleException("Unsupported Minecraft version '${minecraftVersion}'. Supported: ${targets.keySet().join(', ')}")
+}
+def fabricApiVersion = targets[minecraftVersion]
+
+def compatLayers = [
+        "26.1.2": ["advancements/legacy", "entity/v26_1"],
+        "26.2"  : ["advancements/legacy", "entity/v26_2"],
+        "26.3"  : ["advancements/record", "entity/v26_3"],
+]
+compatLayers[minecraftVersion].each { layer ->
+    sourceSets.main.java.srcDir "src/compat/${layer}/java"
+}
+
+version = "${project.mod_version}+${minecraftVersion}"
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+loom {
+    runs.configureEach {
+        runDir = "run/${minecraftVersion}"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+}
+
+processResources {
+    def modVersion = project.version
+    inputs.property "version", modVersion
+    inputs.property "minecraft_version", minecraftVersion
+
+    filesMatching("fabric.mod.json") {
+        expand "version": modVersion, "minecraft_version": minecraftVersion
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release = 25
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    withSourcesJar()
+}
+
+tasks.register("collect", Copy) {
+    from tasks.named("jar")
+    into layout.projectDirectory.dir("dist")
+}

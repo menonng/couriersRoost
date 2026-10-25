@@ -1,0 +1,31 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:feather"
+    },
+    "background": "minecraft:gui/advancements/backgrounds/husbandry",
+    "title": {
+      "translate": "advancements.courierpost.first_message.title",
+      "fallback": "Is This a Pigeon?"
+    },
+    "description": {
+      "translate": "advancements.courierpost.first_message.description",
+      "fallback": "No, this one carries messages."
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "sent": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "sent"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

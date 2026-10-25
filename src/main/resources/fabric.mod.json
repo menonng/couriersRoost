@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "courierpost",
+  "version": "${version}",
+  "name": "The Courier's Roost",
+  "description": "All chat is delivered by courier birds that physically fly to their recipients.",
+  "authors": [],
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "com.courierpost.CourierPost"
+    ]
+  },
+  "mixins": [
+    "courierpost.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=25"
+  }
+}
