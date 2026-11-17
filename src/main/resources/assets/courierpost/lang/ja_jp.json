@@ -36,6 +36,7 @@
   "courierpost.ui.on": "オン",
   "courierpost.ui.off": "オフ",
   "courierpost.ui.tooltip_toggle": "クリックで切り替え",
+  "courierpost.ui.tooltip_edit": "このコマンドで変更します:",
   "courierpost.ui.tooltip_range": "範囲: %s",
   "advancements.courierpost.first_message.title": "鳩を飛ばす",
   "advancements.courierpost.first_message.description": "ぽっぽー！"

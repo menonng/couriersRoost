@@ -1,7 +1,7 @@
 package com.courierpost.bird;
 
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
 import java.util.UUID;
@@ -29,7 +29,7 @@ public final class CourierBird {
     public boolean baby;
     public int variantIndex;
 
-    public transient Chicken entity;
+    public transient Mob entity;
     public transient double lastSpeed;
     public transient double remainingDistance;
     public transient int landingTicks;

@@ -4,12 +4,11 @@ import com.courierpost.CourierPost;
 import com.courierpost.advancement.AdvancementLocalizer;
 import com.courierpost.bird.BirdManager;
 import com.courierpost.bird.MessageKind;
+import com.courierpost.compat.Platform;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.scores.PlayerTeam;
 
 import java.util.Collection;
@@ -29,7 +28,7 @@ public final class ChatHandler {
 
     public static boolean handleGlobal(ServerPlayer sender, String content) {
         int cooldown = CourierPost.config().globalChatCooldown;
-        if (cooldown > 0 && !Commands.LEVEL_GAMEMASTERS.check(sender.permissions())) {
+        if (cooldown > 0 && !Platform.isOperator(sender)) {
             long now = System.currentTimeMillis();
             long last = COOLDOWNS.getOrDefault(sender.getUUID(), 0L);
             long remaining = cooldown * 1000L - (now - last);
@@ -41,9 +40,9 @@ public final class ChatHandler {
         }
 
         BirdManager manager = CourierPost.manager();
-        MinecraftServer server = sender.level().getServer();
-        sender.sendSystemMessage(CourierText.outgoing(MessageKind.GLOBAL, sender.getGameProfile().name(), null, null, content));
-        CourierPost.LOGGER.info("<{}> {}", sender.getGameProfile().name(), content);
+        MinecraftServer server = Platform.levelOf(sender).getServer();
+        sender.sendSystemMessage(CourierText.outgoing(MessageKind.GLOBAL, Platform.playerName(sender), null, null, content));
+        CourierPost.LOGGER.info("<{}> {}", Platform.playerName(sender), content);
 
         for (ServerPlayer recipient : server.getPlayerList().getPlayers()) {
             if (recipient.getUUID().equals(sender.getUUID())) {
@@ -59,8 +58,8 @@ public final class ChatHandler {
     public static void handleWhisper(ServerPlayer sender, Collection<ServerPlayer> targets, String content) {
         BirdManager manager = CourierPost.manager();
         for (ServerPlayer target : targets) {
-            sender.sendSystemMessage(CourierText.outgoing(MessageKind.WHISPER, sender.getGameProfile().name(),
-                    target.getGameProfile().name(), null, content));
+            sender.sendSystemMessage(CourierText.outgoing(MessageKind.WHISPER, Platform.playerName(sender),
+                    Platform.playerName(target), null, content));
             if (!target.getUUID().equals(sender.getUUID())) {
                 manager.dispatch(sender, target, MessageKind.WHISPER, content, null);
             }
@@ -72,7 +71,7 @@ public final class ChatHandler {
     public static void handleTeam(ServerPlayer sender, PlayerTeam team, Collection<ServerPlayer> targets, String content) {
         String teamName = team.getDisplayName().getString();
         BirdManager manager = CourierPost.manager();
-        sender.sendSystemMessage(CourierText.outgoing(MessageKind.TEAM, sender.getGameProfile().name(), null, teamName, content));
+        sender.sendSystemMessage(CourierText.outgoing(MessageKind.TEAM, Platform.playerName(sender), null, teamName, content));
 
         for (ServerPlayer recipient : targets) {
             if (recipient.getUUID().equals(sender.getUUID())) {
@@ -85,11 +84,11 @@ public final class ChatHandler {
     }
 
     private static void grantAdvancement(ServerPlayer player) {
-        MinecraftServer server = player.level().getServer();
+        MinecraftServer server = Platform.levelOf(player).getServer();
         if (server == null) {
             return;
         }
-        AdvancementHolder holder = server.getAdvancements().get(AdvancementLocalizer.ID);
+        AdvancementHolder holder = AdvancementLocalizer.find(server);
         if (holder == null) {
             return;
         }
@@ -100,7 +99,7 @@ public final class ChatHandler {
         if (!advancements.award(holder, "sent")) {
             return;
         }
-        if (!player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
+        if (!Platform.announceAdvancements(Platform.levelOf(player))) {
             return;
         }
         for (ServerPlayer viewer : server.getPlayerList().getPlayers()) {

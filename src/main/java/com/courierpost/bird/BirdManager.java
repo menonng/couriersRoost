@@ -2,6 +2,7 @@ package com.courierpost.bird;
 
 import com.courierpost.CourierPost;
 import com.courierpost.chat.CourierText;
+import com.courierpost.compat.Platform;
 import com.courierpost.config.CourierConfig;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -9,7 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -56,12 +57,12 @@ public final class BirdManager {
         CourierBird bird = new CourierBird();
         bird.id = UUID.randomUUID();
         bird.senderId = sender.getUUID();
-        bird.senderName = sender.getGameProfile().name();
+        bird.senderName = Platform.playerName(sender);
         bird.recipientId = recipient.getUUID();
         bird.kind = kind;
         bird.content = content;
         bird.teamName = teamName == null ? "" : teamName;
-        bird.dimension = sender.level().dimension();
+        bird.dimension = Platform.levelOf(sender).dimension();
         bird.x = sender.getX();
         bird.y = sender.getY() + 1.5D;
         bird.z = sender.getZ();
@@ -69,7 +70,7 @@ public final class BirdManager {
         bird.delayTicks = config.baseDimensionDelay * 20;
         bird.speedFactor = 1.0D + (random.nextDouble() * 2.0D - 1.0D) * config.speedVariation;
         bird.baby = random.nextDouble() < 0.1D;
-        bird.variantIndex = random.nextInt(BirdVariants.count());
+        bird.variantIndex = random.nextInt(EntityCompat.variantCount());
 
         int estimated = estimateTicks(bird, recipient, config);
         if (random.nextDouble() < config.lostChance) {
@@ -84,7 +85,7 @@ public final class BirdManager {
 
     private int estimateTicks(CourierBird bird, ServerPlayer recipient, CourierConfig config) {
         double distance;
-        if (bird.dimension.equals(recipient.level().dimension())) {
+        if (bird.dimension.equals(Platform.levelOf(recipient).dimension())) {
             distance = Math.sqrt(squaredHorizontal(bird.x - recipient.getX(), bird.z - recipient.getZ()));
         } else {
             distance = Math.sqrt(squaredHorizontal(recipient.getX(), recipient.getZ()));
@@ -139,7 +140,7 @@ public final class BirdManager {
                 continue;
             }
 
-            ResourceKey<Level> targetDimension = recipient.level().dimension();
+            ResourceKey<Level> targetDimension = Platform.levelOf(recipient).dimension();
             if (!bird.dimension.equals(targetDimension)) {
                 enterDimension(bird, recipient, config);
             }
@@ -209,7 +210,7 @@ public final class BirdManager {
 
     private void enterDimension(CourierBird bird, ServerPlayer recipient, CourierConfig config) {
         ServerLevel source = server.getLevel(bird.dimension);
-        ServerLevel destination = recipient.level();
+        ServerLevel destination = Platform.levelOf(recipient);
         double newX = 0.0D;
         double newZ = 0.0D;
         if (config.useCoordinateConversion && source != null) {
@@ -240,7 +241,7 @@ public final class BirdManager {
 
     private void deliver(CourierBird bird, ServerPlayer recipient) {
         recipient.sendSystemMessage(CourierText.incoming(bird));
-        ArrivalEffect.play(recipient.level(), recipient.getX(),
+        ArrivalEffect.play(Platform.levelOf(recipient), recipient.getX(),
                 recipient.getY() + 0.3D, recipient.getZ(), random);
     }
 
@@ -259,11 +260,11 @@ public final class BirdManager {
         if (level == null) {
             return;
         }
-        Chicken entity = EntityCompat.createBird(level);
+        Mob entity = EntityCompat.createBird(level);
         if (entity == null) {
             return;
         }
-        entity.snapTo(bird.x, bird.y, bird.z, (float) bird.yaw, 0.0F);
+        Platform.place(entity, bird.x, bird.y, bird.z, (float) bird.yaw);
         entity.setNoAi(true);
         EntityCompat.makeInvulnerable(entity);
         entity.setSilent(true);
@@ -271,7 +272,7 @@ public final class BirdManager {
         entity.setPersistenceRequired();
         entity.noPhysics = true;
         entity.addTag(BIRD_TAG);
-        BirdVariants.apply(level, entity, bird.baby, bird.variantIndex);
+        EntityCompat.applyVariant(level, entity, bird.baby, bird.variantIndex);
         level.addFreshEntity(entity);
         bird.entity = entity;
     }
@@ -288,10 +289,10 @@ public final class BirdManager {
             spawnEntity(bird);
             return;
         }
-        Chicken entity = bird.entity;
+        Mob entity = bird.entity;
         entity.noPhysics = true;
         entity.setDeltaMovement(Vec3.ZERO);
-        entity.snapTo(bird.x, bird.y, bird.z, (float) bird.yaw, 0.0F);
+        Platform.place(entity, bird.x, bird.y, bird.z, (float) bird.yaw);
         entity.setYHeadRot((float) bird.yaw);
         entity.setYBodyRot((float) bird.yaw);
     }
@@ -313,7 +314,7 @@ public final class BirdManager {
         List<Entity> orphans = new ArrayList<>();
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : level.getAllEntities()) {
-                if (entity instanceof Chicken && EntityCompat.hasTag(entity, BIRD_TAG)) {
+                if (EntityCompat.isBird(entity) && EntityCompat.hasTag(entity, BIRD_TAG)) {
                     orphans.add(entity);
                 }
             }

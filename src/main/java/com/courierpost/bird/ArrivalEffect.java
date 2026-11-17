@@ -1,6 +1,6 @@
 package com.courierpost.bird;
 
-import net.minecraft.core.particles.DustParticleOptions;
+import com.courierpost.compat.Platform;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -21,7 +21,7 @@ public final class ArrivalEffect {
 
     public static void play(ServerLevel level, double x, double y, double z, Random random) {
         int color = Mth.hsvToRgb(random.nextFloat(), 0.85F, 1.0F);
-        level.sendParticles(new DustParticleOptions(color, DUST_SCALE), x, y, z, DUST_COUNT, SPREAD, SPREAD, SPREAD, 0.0D);
+        level.sendParticles(Platform.dust(color, DUST_SCALE), x, y, z, DUST_COUNT, SPREAD, SPREAD, SPREAD, 0.0D);
         level.sendParticles(ParticleTypes.FIREWORK, x, y, z, SPARK_COUNT, SPREAD, SPREAD, SPREAD, 0.02D);
         level.playSound(null, x, y, z, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS,
                 VOLUME, 1.2F + random.nextFloat() * 0.3F);

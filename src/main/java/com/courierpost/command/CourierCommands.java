@@ -4,6 +4,7 @@ import com.courierpost.CourierPost;
 import com.courierpost.bird.BirdManager;
 import com.courierpost.bird.CourierBird;
 import com.courierpost.chat.Localization;
+import com.courierpost.compat.Platform;
 import com.courierpost.config.CourierConfig;
 import com.courierpost.ui.ConfigDialog;
 import com.mojang.brigadier.CommandDispatcher;
@@ -13,7 +14,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -31,7 +31,7 @@ public final class CourierCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("birdconfig")
-                .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+                .requires(Platform.adminOnly())
                 .executes(CourierCommands::openDialog)
                 .then(literal("reload").executes(CourierCommands::reload))
                 .then(literal("toggle")
@@ -58,11 +58,11 @@ public final class CourierCommands {
                                         .executes(CourierCommands::set)))));
 
         dispatcher.register(literal("birds")
-                .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+                .requires(Platform.adminOnly())
                 .executes(context -> list(context, null)));
 
         dispatcher.register(literal("birdtrack")
-                .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
+                .requires(Platform.adminOnly())
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayerOrException();
                     return list(context, player);
@@ -169,8 +169,8 @@ public final class CourierCommands {
 
         for (CourierBird bird : birds) {
             ServerPlayer recipient = manager.server().getPlayerList().getPlayer(bird.recipientId);
-            String recipientName = recipient == null ? "-" : recipient.getGameProfile().name();
-            String dimension = bird.dimension.identifier().toString();
+            String recipientName = recipient == null ? "-" : Platform.playerName(recipient);
+            String dimension = Platform.dimensionId(bird.dimension);
             String speed = String.format("%.1f", bird.lastSpeed);
             String distance = String.format("%.1f", bird.remainingDistance);
             context.getSource().sendSuccess(() -> Localization.text(context.getSource(), "courierpost.command.birds.entry",

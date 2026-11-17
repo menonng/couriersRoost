@@ -2,6 +2,7 @@ package com.courierpost.command;
 
 import com.courierpost.chat.ChatHandler;
 import com.courierpost.chat.Localization;
+import com.courierpost.compat.Platform;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -53,7 +54,7 @@ public final class WhisperCommands {
 
         List<String> names = new ArrayList<>();
         for (ServerPlayer player : context.getSource().getServer().getPlayerList().getPlayers()) {
-            String name = player.getGameProfile().name();
+            String name = Platform.playerName(player);
             if (!chosen.contains(name.toLowerCase(Locale.ROOT))) {
                 names.add(name);
             }

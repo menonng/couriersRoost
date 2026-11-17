@@ -4,8 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import com.courierpost.compat.Platform;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
@@ -43,7 +42,7 @@ public final class BirdStorage {
             json.addProperty("kind", bird.kind.name());
             json.addProperty("content", bird.content);
             json.addProperty("team", bird.teamName);
-            json.addProperty("dimension", bird.dimension.identifier().toString());
+            json.addProperty("dimension", Platform.dimensionId(bird.dimension));
             json.addProperty("x", bird.x);
             json.addProperty("y", bird.y);
             json.addProperty("z", bird.z);
@@ -85,8 +84,7 @@ public final class BirdStorage {
                 bird.kind = MessageKind.byName(json.get("kind").getAsString());
                 bird.content = json.get("content").getAsString();
                 bird.teamName = json.get("team").getAsString();
-                Identifier dimension = Identifier.parse(json.get("dimension").getAsString());
-                bird.dimension = ResourceKey.create(Registries.DIMENSION, dimension);
+                bird.dimension = Platform.dimensionKey(json.get("dimension").getAsString());
                 bird.x = json.get("x").getAsDouble();
                 bird.y = json.get("y").getAsDouble();
                 bird.z = json.get("z").getAsDouble();

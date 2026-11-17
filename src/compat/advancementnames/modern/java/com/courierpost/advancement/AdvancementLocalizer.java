@@ -2,6 +2,7 @@ package com.courierpost.advancement;
 
 import com.courierpost.chat.Localization;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.network.chat.Component;
@@ -9,6 +10,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
@@ -20,6 +22,10 @@ public final class AdvancementLocalizer {
     private static final String DESCRIPTION_KEY = "advancements.courierpost.first_message.description";
 
     private AdvancementLocalizer() {
+    }
+
+    public static AdvancementHolder find(MinecraftServer server) {
+        return server.getAdvancements().get(ID);
     }
 
     public static Advancement rebuild(Advancement source, DisplayInfo display) {

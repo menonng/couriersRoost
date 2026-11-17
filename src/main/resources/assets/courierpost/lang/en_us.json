@@ -36,6 +36,7 @@
   "courierpost.ui.on": "On",
   "courierpost.ui.off": "Off",
   "courierpost.ui.tooltip_toggle": "Click to toggle",
+  "courierpost.ui.tooltip_edit": "Run this to change it:",
   "courierpost.ui.tooltip_range": "Range: %s",
   "advancements.courierpost.first_message.title": "Is This a Pigeon?",
   "advancements.courierpost.first_message.description": "No, this one carries messages."

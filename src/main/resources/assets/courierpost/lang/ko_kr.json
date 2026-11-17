@@ -36,6 +36,7 @@
   "courierpost.ui.on": "켜짐",
   "courierpost.ui.off": "꺼짐",
   "courierpost.ui.tooltip_toggle": "클릭하면 전환됩니다",
+  "courierpost.ui.tooltip_edit": "이 명령으로 변경합니다:",
   "courierpost.ui.tooltip_range": "범위: %s",
   "advancements.courierpost.first_message.title": "비둘기야 먹자~",
   "advancements.courierpost.first_message.description": "구구구구구구! 마시쪙"

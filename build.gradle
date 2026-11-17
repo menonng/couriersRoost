@@ -9,7 +9,7 @@ def targets = [
                 java  : 25,
                 loader: "0.19.3",
                 mojmap: false,
-                layers: ["advancements/legacy", "entity/v26_1", "mixins/v26"],
+                layers: ["advancements/legacy", "entity/v26_1", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
         "26.2": [
@@ -17,7 +17,7 @@ def targets = [
                 java  : 25,
                 loader: "0.19.3",
                 mojmap: false,
-                layers: ["advancements/legacy", "entity/v26_2", "mixins/v26"],
+                layers: ["advancements/legacy", "entity/v26_2", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
         "26.3": [
@@ -25,7 +25,7 @@ def targets = [
                 java  : 25,
                 loader: "0.19.3",
                 mojmap: false,
-                layers: ["advancements/record", "entity/v26_3", "mixins/v26"],
+                layers: ["advancements/record", "entity/v26_3", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
         "1.21.11": [
@@ -33,7 +33,7 @@ def targets = [
                 java  : 21,
                 loader: "0.16.0",
                 mojmap: true,
-                layers: ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21"],
+                layers: ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
         "1.21.1": [
@@ -41,7 +41,7 @@ def targets = [
                 java  : 21,
                 loader: "0.16.0",
                 mojmap: true,
-                layers: ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21"],
+                layers: ["advancements/old", "advancementnames/old", "entity/mc1_20", "mixins/mc1_20", "platform/old", "ui/chat", "chicken/old"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
         "1.20.1": [
@@ -49,7 +49,7 @@ def targets = [
                 java  : 17,
                 loader: "0.15.0",
                 mojmap: true,
-                layers: ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21"],
+                layers: ["advancements/old", "advancementnames/old", "entity/mc1_20", "mixins/mc1_20", "platform/old", "ui/chat", "chicken/old"],
                 mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
         ],
 ]
