@@ -2,9 +2,17 @@
   "schemaVersion": 1,
   "id": "courierpost",
   "version": "${version}",
-  "name": "The Courier's Roost",
+  "name": "Courier's Roost",
   "description": "All chat is delivered by courier birds that physically fly to their recipients.",
-  "authors": [],
+  "authors": [
+    "menonng"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/couriers-roost",
+    "sources": "https://github.com/menonng/couriersRoost",
+    "issues": "https://github.com/menonng/couriersRoost/issues"
+  },
+  "icon": "assets/courierpost/icon.png",
   "license": "MIT",
   "environment": "server",
   "entrypoints": {

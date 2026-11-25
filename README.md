@@ -1,4 +1,4 @@
-# The Courier's Roost
+# Courier's Roost
 
 모든 채팅이 즉시 전달되지 않는다. 전서구(닭)가 수신자에게 실제로 날아가고, 도착했을 때 메시지가 배달된다. 거리가 곧 지연 시간이다.
 
@@ -71,7 +71,7 @@ java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 기동 로그에 다음 줄이 보이면 정상이다.
 
 ```
-[The Courier's Roost] Restored 0 courier birds
+[Courier's Roost] Restored 0 courier birds
 ```
 
 ### 6. 접속한다

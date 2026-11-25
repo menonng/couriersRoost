@@ -52,7 +52,7 @@ Minecraft Java 26.2 / Fabric / **서버 사이드 전용** 모드.
 
 현재: 패키지 `com.courierpost`, mod id `courierpost`, 진입점 `CourierPost`, 태그 `courierpost_bird`, 설정 `config/courierpost.json`, 저장 `<world>/data/courierpost_birds.json`.
 
-`fabric.mod.json`의 표시 이름(`"name": "The Courier's Roost"`)과 로거 라벨만 남아 있다. 이건 사람이 읽는 문자열이라 의도적으로 남긴 것이다. 사용자가 지우라고 하면 지운다.
+`fabric.mod.json`의 표시 이름(`"name": "Courier's Roost"`)과 로거 라벨만 남아 있다. 이건 사람이 읽는 문자열이라 의도적으로 남긴 것이다. 사용자가 지우라고 하면 지운다.
 
 ---
 

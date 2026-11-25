@@ -22,7 +22,7 @@ import java.util.List;
 
 public final class CourierPost implements DedicatedServerModInitializer {
     public static final String MOD_ID = "courierpost";
-    public static final Logger LOGGER = LoggerFactory.getLogger("The Courier's Roost");
+    public static final Logger LOGGER = LoggerFactory.getLogger("Courier's Roost");
 
     private static final Path CONFIG_PATH =
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
