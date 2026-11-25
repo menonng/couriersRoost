@@ -11,6 +11,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
@@ -24,8 +25,16 @@ public final class AdvancementLocalizer {
     private AdvancementLocalizer() {
     }
 
-    public static AdvancementHolder find(MinecraftServer server) {
-        return server.getAdvancements().get(ID);
+    public static boolean grant(ServerPlayer player, MinecraftServer server) {
+        AdvancementHolder holder = server.getAdvancements().get(ID);
+        if (holder == null) {
+            return false;
+        }
+        PlayerAdvancements advancements = player.getAdvancements();
+        if (advancements.getOrStartProgress(holder).isDone()) {
+            return false;
+        }
+        return advancements.award(holder, "sent");
     }
 
     public static Advancement rebuild(Advancement source, DisplayInfo display) {

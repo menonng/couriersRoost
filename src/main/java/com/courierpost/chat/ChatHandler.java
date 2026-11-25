@@ -5,9 +5,7 @@ import com.courierpost.advancement.AdvancementLocalizer;
 import com.courierpost.bird.BirdManager;
 import com.courierpost.bird.MessageKind;
 import com.courierpost.compat.Platform;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.PlayerTeam;
 
@@ -88,15 +86,7 @@ public final class ChatHandler {
         if (server == null) {
             return;
         }
-        AdvancementHolder holder = AdvancementLocalizer.find(server);
-        if (holder == null) {
-            return;
-        }
-        PlayerAdvancements advancements = player.getAdvancements();
-        if (advancements.getOrStartProgress(holder).isDone()) {
-            return;
-        }
-        if (!advancements.award(holder, "sent")) {
+        if (!AdvancementLocalizer.grant(player, server)) {
             return;
         }
         if (!Platform.announceAdvancements(Platform.levelOf(player))) {

@@ -1,5 +1,6 @@
 package com.courierpost.chat;
 
+import com.courierpost.compat.Platform;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.commands.CommandSourceStack;
@@ -52,7 +53,7 @@ public final class Localization {
         if (player == null) {
             return DEFAULT_LANGUAGE;
         }
-        String reported = player.clientInformation().language();
+        String reported = Platform.language(player);
         if (reported == null) {
             return DEFAULT_LANGUAGE;
         }

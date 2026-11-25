@@ -12,12 +12,12 @@
 
 | 항목 | 버전 |
 | --- | --- |
-| Minecraft | 26.1.2 / 26.2 / 26.3 전용 서버 |
-| Fabric Loader | 0.19.3 이상 |
+| Minecraft | 26.1.2 / 26.2 / 26.3 / 1.21.11 / 1.21.1 / 1.20.1 전용 서버 |
+| Fabric Loader | 26.x: 0.19.3 이상, 1.21.x: 0.16.0 이상, 1.20.1: 0.15.0 이상 |
 | Fabric API | 해당 버전 대응판 |
-| Java | 25 이상 |
+| Java | 26.x: 25, 1.21.x: 21, 1.20.1: 17 이상 |
 
-세 버전 모두 Java 25를 요구한다. Java 21로는 서버가 뜨지 않는다. 아래 설명에서 `<버전>`은 셋 중 하나로 바꿔 읽는다.
+Minecraft 버전마다 요구하는 Java가 다르다. 26.x는 Java 21로 뜨지 않는다. 아래 설명에서 `<버전>`은 지원 버전 중 하나로 바꿔 읽는다.
 
 ---
 
@@ -62,7 +62,7 @@ courier-server/
 java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 ```
 
-`java`가 25 미만이면 25 경로를 직접 지정한다.
+기본 `java`가 위 표의 요구 버전보다 낮으면 경로를 직접 지정한다.
 
 ```
 "C:\Program Files\Eclipse Adoptium\jdk-25\bin\java.exe" -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
@@ -136,6 +136,7 @@ java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 
 | 명령 | 설명 |
 | --- | --- |
+| `/birdconfig` | 설정 화면 열기. 1.21.6 이상은 바닐라 대화 상자, 그 아래 버전은 클릭 가능한 채팅 메뉴 |
 | `/birdconfig get <키>` | 값 조회 |
 | `/birdconfig set <키> <값>` | 값 변경, 즉시 반영 |
 | `/birdconfig reload` | 설정 파일 다시 읽기 |
@@ -176,13 +177,18 @@ java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 
 ## 지원 버전
 
-| Minecraft | 산출물 |
-| --- | --- |
-| 26.1.2 | `courierpost-1.0.0+26.1.2.jar` |
-| 26.2 | `courierpost-1.0.0+26.2.jar` |
-| 26.3 | `courierpost-1.0.0+26.3.jar` |
+| Minecraft | 산출물 | Java | 설정 화면 | 닭 변종 |
+| --- | --- | --- | --- | --- |
+| 26.1.2 | `courierpost-1.0.0+26.1.2.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| 26.2 | `courierpost-1.0.0+26.2.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| 26.3 | `courierpost-1.0.0+26.3.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| 1.21.11 | `courierpost-1.0.0+1.21.11.jar` | 21 | 대화 상자 | 온대 / 온난 / 한랭 |
+| 1.21.1 | `courierpost-1.0.0+1.21.1.jar` | 21 | 채팅 메뉴 | 기본 닭 |
+| 1.20.1 | `courierpost-1.0.0+1.20.1.jar` | 17 | 채팅 메뉴 | 기본 닭 |
 
 각 jar은 해당 버전에서만 로드된다. `fabric.mod.json`에 `~<버전>`으로 고정돼 있으므로 섞어 쓰면 Fabric이 거부한다.
+
+버전 간 차이는 위 두 열뿐이고 배달 규칙, 명령어, 설정 키, 발전과제는 모든 버전에서 같다. 대화 상자 API는 1.21.6에, 닭 변종은 1.21.5에 추가됐으므로 그 이전 버전은 각각 채팅 메뉴와 기본 닭으로 대신한다.
 
 ## 빌드
 
@@ -192,15 +198,18 @@ java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 
 `-Pmc`로 대상 버전을 고른다. 생략하면 `gradle.properties`의 `default_minecraft_version`을 쓴다. 산출물은 `dist/`에 모인다.
 
-세 버전을 모두 만들려면 세 번 돌린다.
+전 버전을 만들려면 버전마다 한 번씩 돌린다.
 
 ```
 ./gradlew collect -Pmc=26.1.2
 ./gradlew collect -Pmc=26.2
 ./gradlew collect -Pmc=26.3
+./gradlew collect -Pmc=1.21.11
+./gradlew collect -Pmc=1.21.1
+./gradlew collect -Pmc=1.20.1
 ```
 
-JDK 25가 필요하다. 세 버전 모두 Java 25를 요구한다.
+대상 버전에 맞는 JDK(25, 21, 17)가 설치돼 있어야 한다. Gradle 툴체인이 설치된 JDK 중에서 골라 쓴다.
 
 개발 관련 상세 내용은 `HANDOFF.md`를 볼 것.
 

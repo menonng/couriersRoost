@@ -23,6 +23,10 @@ public final class Platform {
         return player.getGameProfile().name();
     }
 
+    public static String language(ServerPlayer player) {
+        return player.clientInformation().language();
+    }
+
     public static ServerLevel levelOf(ServerPlayer player) {
         return player.level();
     }

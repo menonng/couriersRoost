@@ -66,7 +66,6 @@ com.courierpost
 │   ├── CourierBird                전서구 1마리의 상태 (순수 데이터)
 │   ├── BirdManager                핵심. 틱 시뮬레이션, 추적, 배달, 엔티티 동기화
 │   ├── BirdStorage                직렬화 (재시작 복원, 30초 자동 저장)
-│   ├── BirdVariants               아기 닭 변종. 버전 민감 API 격리용
 │   └── MessageKind                GLOBAL / WHISPER / TEAM
 ├── chat/
 │   ├── ChatHandler                발송 진입점. 쿨다운, 발전과제 지급, 공지
@@ -134,17 +133,43 @@ com.courierpost
 
 ## 3.6 멀티버전 구조
 
-26.1.2 / 26.2 / 26.3을 하나의 소스 트리로 지원한다. 공통 코드는 `src/main/java`에 두고, 버전마다 갈리는 부분만 `src/compat/` 아래 레이어로 분리한 뒤 `build.gradle`이 대상 버전에 맞는 디렉터리를 `sourceSets.main`에 붙인다.
+26.1.2 / 26.2 / 26.3 / 1.21.11 / 1.21.1 / 1.20.1을 하나의 소스 트리로 지원한다. 공통 코드는 `src/main/java`에 두고, 버전마다 갈리는 부분만 `src/compat/` 아래 레이어로 분리한 뒤 `build.gradle`이 대상 버전에 맞는 디렉터리를 `sourceSets.main`에 붙인다.
 
 ```
-src/compat/advancements/legacy   26.1.2, 26.2   DisplayInfo 게터 + setLocation, 패킷 getAdded/getRemoved/...
-src/compat/advancements/record   26.3           DisplayInfo 레코드 접근자, PositionedAdvancement
-src/compat/entity/v26_1          26.1.2         EntityType.CHICKEN,  setInvulnerable
-src/compat/entity/v26_2          26.2           EntityTypes.CHICKEN, setInvulnerable
-src/compat/entity/v26_3          26.3           EntityTypes.CHICKEN, setPermanentlyInvulnerable
+src/compat/advancements/legacy       26.1.2, 26.2, 1.21.11   DisplayInfo 게터 + setLocation, 패킷 getAdded/getRemoved/...
+src/compat/advancements/record       26.3                    DisplayInfo 레코드 접근자, PositionedAdvancement
+src/compat/advancements/old          1.21.1                  패킷 4인자 생성자
+src/compat/advancements/ancient      1.20.1                  패킷 안의 Advancement.Builder를 직접 고쳐 쓴다
+src/compat/advancementnames/modern   26.x, 1.21.11           Identifier, AdvancementType, HoverEvent.ShowText
+src/compat/advancementnames/old      1.21.1                  ResourceLocation.fromNamespaceAndPath, AdvancementHolder
+src/compat/advancementnames/ancient  1.20.1                  new ResourceLocation, FrameType, Advancement(홀더 없음)
+src/compat/entity/v26_1              26.1.2                  EntityType.CHICKEN,  setInvulnerable, 변종
+src/compat/entity/v26_2              26.2                    EntityTypes.CHICKEN, setInvulnerable, 변종
+src/compat/entity/v26_3              26.3                    EntityTypes.CHICKEN, setPermanentlyInvulnerable, 변종
+src/compat/entity/mc1_21             1.21.11                 EntityType.CHICKEN, 변종
+src/compat/entity/mc1_20             1.21.1, 1.20.1          animal.Chicken, 변종 없음
+src/compat/mixins/v26                26.x                    hurtServer, Mob.canAttack
+src/compat/mixins/mc1_21             1.21.11                 hurtServer, LivingEntity.canAttack
+src/compat/mixins/mc1_20             1.21.1, 1.20.1          hurt(DamageSource, float), LivingEntity.canAttack
+src/compat/platform/modern           26.x, 1.21.11           permissions(), gamerules 패키지, DustParticleOptions(int, float)
+src/compat/platform/old              1.21.1                  hasPermissions, GameRules.RULE_*, Vector3f 더스트
+src/compat/platform/ancient          1.20.1                  old + new ResourceLocation, 언어 캡처 믹스인
+src/compat/ui/dialog                 26.x, 1.21.11           바닐라 Dialog API 설정 화면
+src/compat/ui/chat                   1.21.1, 1.20.1          클릭 가능한 채팅 메뉴 설정 화면
+src/compat/chicken/modern|old                                animal.chicken.Chicken / animal.Chicken
+src/compat/packets/common            1.21.1 이상             ServerCommonPacketListenerImpl.send
+src/compat/packets/game              1.20.1                  ServerGamePacketListenerImpl.send
 ```
 
-버전을 추가할 때는 `build.gradle`의 `targets`(Fabric API 버전)와 `compatLayers`(레이어 조합) 두 맵에 항목을 넣는다.
+버전을 추가할 때는 `build.gradle`의 `targets` 맵에 항목 하나를 넣는다. Fabric API, Java, 로더 하한, 매핑 방식(`mojmap`), 레이어 조합, 믹스인 목록이 한 곳에 있다.
+
+빌드 파이프라인은 둘로 갈린다. 26.x는 난독화 해제된 jar을 그대로 쓰는 `net.fabricmc.fabric-loom` (Loom 1.17), 그 이전은 `officialMojangMappings()`로 리매핑하는 고전 `fabric-loom` (Loom 1.16)이다. `settings.gradle`이 `-Pmc`를 보고 Loom 버전을 고른다. 고전 파이프라인은 `useLegacyMixinAp = false`가 있어야 믹스인 타깃이 intermediary로 리매핑된다.
+
+1.21 이전 버전에서 따로 챙길 점:
+
+- 1.20.1은 `ServerPlayer.clientInformation()`이 없다. `ServerPlayerMixin`이 `updateOptions`에서 언어를 잡아 `LanguageHolder`로 노출한다.
+- 1.20.1은 데이터팩 폴더가 복수형(`data/<ns>/advancements/`)이고 아이콘 키가 `item`이다. `targets`의 `pluralData`가 켜져 있으면 `processResources`가 경로를 바꾸고 `${icon_key}`를 `item`으로 채운다.
+- 1.20.1에는 configuration 단계가 없어 패킷 송신 믹스인을 `ServerGamePacketListenerImpl`에 건다.
 
 26.x 사이에서 실제로 갈린 지점은 이 셋뿐이다.
 
@@ -152,7 +177,7 @@ src/compat/entity/v26_3          26.3           EntityTypes.CHICKEN, setPermanen
 2. `Entity.setInvulnerable` -> `setPermanentlyInvulnerable` (26.3)
 3. `DisplayInfo`와 `ClientboundUpdateAdvancementsPacket`이 26.3에서 레코드가 되면서 게터 이름이 바뀌고, 발전과제 화면 좌표가 `DisplayInfo`에서 빠져 패킷의 `PositionedAdvancement`로 옮겨갔다
 
-실행 디렉터리도 버전별로 갈라 뒀다 (`run/26.1.2`, `run/26.2`, `run/26.3`). 같은 월드를 여러 버전으로 열면 월드가 상위 버전으로 업그레이드돼 되돌릴 수 없다.
+실행 디렉터리도 버전별로 갈라 뒀다 (`run/<버전>`). 같은 월드를 여러 버전으로 열면 월드가 상위 버전으로 업그레이드돼 되돌릴 수 없다.
 
 ---
 
@@ -163,22 +188,25 @@ cd courierpost
 ./gradlew collect -Pmc=26.2
 ```
 
-대상 버전은 `-Pmc`로 고른다 (`26.1.2`, `26.2`, `26.3`). 생략하면 `default_minecraft_version`. 산출물은 `dist/courierpost-1.0.0+<버전>.jar`.
+대상 버전은 `-Pmc`로 고른다 (`26.1.2`, `26.2`, `26.3`, `1.21.11`, `1.21.1`, `1.20.1`). 생략하면 `default_minecraft_version`. 산출물은 `dist/courierpost-1.0.0+<버전>.jar`.
 
 버전별 Fabric API는 `build.gradle`의 `targets` 맵에 박혀 있고, 전부 실측치다.
 
 ```
-26.1.2 -> 0.155.3+26.1.2
-26.2   -> 0.161.0+26.2
-26.3   -> 0.161.0+26.3
+26.1.2  -> 0.155.3+26.1.2
+26.2    -> 0.161.0+26.2
+26.3    -> 0.161.0+26.3
+1.21.11 -> 0.141.6+1.21.11
+1.21.1  -> 0.116.17+1.21.1
+1.20.1  -> 0.92.12+1.20.1
 loader_version=0.19.5
-loom_version=1.17.19
+loom 26.x=1.17.19, 그 외=1.16.3
 ```
 
 확인처: `https://fabricmc.net/develop/`, `https://meta.fabricmc.net/v2/versions/loader/26.2`,
 그리고 `https://github.com/FabricMC/fabric-example-mod` 의 `master` 브랜치 빌드 파일. 마지막 것이 가장 확실하다 — 최신 MC에 맞춰 갱신되고, 플러그인 ID나 의존성 선언 방식이 바뀌면 거기서 먼저 드러난다.
 
-Gradle 9.5.1 wrapper 포함. Gradle 데몬은 JDK 21에서도 돌지만 컴파일은 툴체인 25로 fork된다.
+Gradle 9.5.1 wrapper 포함. 컴파일은 대상 버전의 툴체인(25, 21, 17)으로 fork되므로 세 JDK가 모두 설치돼 있어야 전 버전을 만들 수 있다.
 
 ---
 
@@ -281,6 +309,23 @@ Minecraft 클라이언트 없이, 원시 소켓으로 26.2 프로토콜을 직�
 - 프레이밍을 단순하게 하려고 `run/server.properties`에서 `network-compression-threshold=-1`, `pause-when-empty-seconds=0`으로 두었다. 압축을 켜면 프레임 앞에 `dataLength` VarInt가 추가돼 프로브를 고쳐야 한다.
 - 26.2 기준 유용한 ID: 설정 clientbound 3=finish, 5=ping, 14=select_known_packs / 설정 serverbound 0=client_information, 3=finish, 5=pong, 7=select_known_packs / 플레이 clientbound 0x31=login, 0x48=player_position, 0x79=system_chat, 0x82=update_advancements / 플레이 serverbound 0x00=accept_teleportation, 0x07=chat_command, 0x09=chat, 0x1C=keep_alive, 0x2C=player_loaded
 - 프로브로는 **플레이어를 텔레포트할 수 없다.** `/tp`는 성공 메시지를 돌려주지만 위치가 원래대로 남고, 클라이언트로 위치 패킷도 오지 않는다. 로그인 시점의 텔레포트는 확인 패킷을 보내면 정상 처리되는데 그 뒤 `/tp`는 안 먹는다. 원인은 못 찾았고, 진짜 클라이언트가 보내는 이동 패킷이 없어서로 추정된다. 그래서 거리 효과는 플레이어를 옮기는 대신 `bird_speed`를 낮춰 측정했다.
+
+### 6.6 멀티버전 프로브 검증
+
+같은 프로브를 버전별 패킷 ID로 돌려 `/msg Bob,Carol probe-payload` 쉼표 복수 대상 배달, 한국어 발송 피드백, 한국어 발전과제 이름을 확인했다. 결과는 모든 버전에서 같다 (Bob 약 8.8초, Carol 약 8.9초, 피드백과 발전과제 모두 한국어).
+
+| 버전 | 프로토콜 | login | keep_alive (cb / sb) | chat_command | 비고 |
+| --- | --- | --- | --- | --- | --- |
+| 26.2 | 776 | 0x31 | 0x2C / 0x1C | 0x07 | player_loaded 0x2C |
+| 1.21.1 | 767 | - | - | - | ID는 `javap`로 다시 뽑을 것. player_loaded 없음, client_information에 particle_status 없음 |
+| 1.20.1 | 763 | 0x28 | 0x23 / 0x12 | 0x04 | configuration 단계 없음 |
+
+1.20.1 프로브에서 걸린 점:
+
+- 로그인 시작 패킷이 이름 뒤에 `boolean + UUID`다.
+- Fabric API가 로그인 쿼리(0x04)를 보낸다. `[트랜잭션 ID, false]`로 답해야 로그인이 진행된다.
+- client_information(0x08)은 play의 login 패킷을 받은 **뒤에** 보내야 한다. 그 전에 보내면 서버 디코더가 아직 LOGIN 상태라 `Index 8 out of bounds for length 3`으로 끊긴다.
+- chat_command는 서명 필드(timestamp, salt, 빈 서명 목록, LastSeen offset, 3바이트 비트셋)를 붙인다.
 
 ## 7. 검증하지 못한 것
 
