@@ -64,9 +64,10 @@ processResources {
             "java_version"   : target.java.toString(),
             "mixins"         : mixinList(target.mixins),
             "icon_key"       : target.pluralData ? "item" : "id",
+            "pack_format"    : target.forgePack,
     ]
     inputs.properties replacements
-    filesMatching(['META-INF/mods.toml', 'courierpost.mixins.json', 'data/*/advancement/**/*.json']) {
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'courierpost.mixins.json', 'data/*/advancement/**/*.json']) {
         expand replacements
     }
     filesMatching('courierpost.mixins.json') {

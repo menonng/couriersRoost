@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "description": "Courier's Roost resources",
+    ${pack_format}
+  }
+}

@@ -61,12 +61,13 @@ processResources {
             "version"        : project.version.toString(),
             "minecraft_range": forgeRange(target.forgeCovers),
             "forge_major"    : forgeMajor,
-            "java_version"   : target.java.toString(),
+            "java_version"   : Math.min(target.java as int, 21).toString(),
             "mixins"         : mixinList(target.mixins),
             "icon_key"       : target.pluralData ? "item" : "id",
+            "pack_format"    : target.forgePack,
     ]
     inputs.properties replacements
-    filesMatching(['META-INF/mods.toml', 'courierpost.mixins.json', 'data/*/advancement/**/*.json']) {
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'courierpost.mixins.json', 'data/*/advancement/**/*.json']) {
         expand replacements
     }
 }
