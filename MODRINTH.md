@@ -63,7 +63,21 @@ English, Korean and Japanese. Each player sees text in their own client language
 
 ## Versions
 
-Download the file that matches your server's Minecraft version and loader. The Fabric version needs Fabric API.
+Download the file that matches your server's Minecraft version and loader. The Fabric version needs Fabric API. The Forge version needs nothing else.
+
+| Minecraft | Fabric | Forge |
+| --- | --- | --- |
+| 26.3 | yes | yes |
+| 26.2 | yes | yes |
+| 26.1, 26.1.1 | yes | |
+| 26.1.2 | yes | yes |
+| 1.21.11 | yes | yes |
+| 1.21 | yes | |
+| 1.21.1 | yes | yes |
+| 1.20 | yes | |
+| 1.20.1 | yes | yes |
+
+Every version listed above was tested on a real server. 1.20.2 to 1.20.6 and 1.21.2 to 1.21.10 are not supported yet.
 
 On versions older than 1.21.6 the settings menu is clickable chat instead of a dialog window, and on versions older than 1.21.5 couriers are regular chickens instead of the temperate, warm and cold variants.
 
