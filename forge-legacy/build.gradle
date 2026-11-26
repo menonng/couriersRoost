@@ -1,0 +1,101 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+def shared = rootDir.parentFile
+apply from: new File(shared, 'targets.gradle')
+
+def sharedProperties = new Properties()
+new File(shared, 'gradle.properties').withInputStream { sharedProperties.load(it) }
+
+def minecraftVersion = (project.findProperty("mc") ?: "1.20.1").toString()
+def target = courierTargets[minecraftVersion]
+def forgeMajor = target.forge.tokenize('.')[0]
+
+version = "${sharedProperties.mod_version}+${minecraftVersion}"
+group = sharedProperties.maven_group
+
+base {
+    archivesName = "${sharedProperties.archives_base_name}-forge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(target.java)
+
+sourceSets.main {
+    java.srcDirs = [new File(shared, 'src/main/java')] +
+            target.layers.collect { new File(shared, "src/compat/${it}/java") } +
+            [new File(shared, "src/loader/forge/${target.eventbus}/java")]
+    resources.srcDirs = [new File(shared, 'src/main/resources'), new File(shared, 'src/loader/forge/resources')]
+}
+
+minecraft {
+    mappings channel: 'official', version: minecraftVersion
+    runs {
+        server {
+            workingDirectory new File(shared, "run/forge-${minecraftVersion}")
+            args '--nogui'
+            mods {
+                courierpost {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, 'courierpost.refmap.json'
+    config 'courierpost.mixins.json'
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraftVersion}-${target.forge}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+processResources {
+    exclude 'fabric.mod.json'
+    def replacements = [
+            "version"        : project.version.toString(),
+            "minecraft_range": forgeRange(target.forgeCovers),
+            "forge_major"    : forgeMajor,
+            "java_version"   : target.java.toString(),
+            "mixins"         : mixinList(target.mixins),
+            "icon_key"       : target.pluralData ? "item" : "id",
+    ]
+    inputs.properties replacements
+    filesMatching(['META-INF/mods.toml', 'courierpost.mixins.json', 'data/*/advancement/**/*.json']) {
+        expand replacements
+    }
+    filesMatching('courierpost.mixins.json') {
+        filter { line -> line.contains('"package"') ? line + '\n  "refmap": "courierpost.refmap.json",' : line }
+    }
+    if (target.pluralData) {
+        filesMatching("data/*/advancement/**") { details ->
+            details.path = details.path.replaceFirst("/advancement/", "/advancements/")
+        }
+        includeEmptyDirs = false
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = target.java
+}
+
+jar {
+    manifest {
+        attributes 'MixinConfigs': 'courierpost.mixins.json'
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.register("collect", Copy) {
+    dependsOn tasks.named("reobfJar")
+    from(layout.buildDirectory.dir("libs")) {
+        include "*.jar"
+    }
+    into new File(shared, "dist")
+}
