@@ -37,6 +37,10 @@ loom {
     runs.configureEach {
         runDir = "run/${minecraftVersion}"
     }
+    runs.named("client") {
+        runDir = "run/${minecraftVersion}-client"
+        vmArgs "-Xmx2G"
+    }
     if (target.mojmap) {
         mixin {
             useLegacyMixinAp = false
