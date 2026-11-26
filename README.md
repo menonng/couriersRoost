@@ -4,6 +4,8 @@
 
 서버 사이드 전용 모드다. 접속자는 모드를 설치할 필요가 없고, 리소스팩도 필요 없다.
 
+Fabric과 Forge를 모두 지원한다.
+
 느린 메시징이라는 발상은 Roost 앱에서 따왔다. 이 프로젝트는 비공식이며 Roost와 제휴하거나 승인받은 관계가 아니다.
 
 ---
@@ -12,10 +14,10 @@
 
 | 항목 | 버전 |
 | --- | --- |
-| Minecraft | 26.1.2 / 26.2 / 26.3 / 1.21.11 / 1.21.1 / 1.20.1 전용 서버 |
-| Fabric Loader | 26.x: 0.19.3 이상, 1.21.x: 0.16.0 이상, 1.20.1: 0.15.0 이상 |
-| Fabric API | 해당 버전 대응판 |
-| Java | 26.x: 25, 1.21.x: 21, 1.20.1: 17 이상 |
+| Minecraft | 아래 "지원 버전" 표의 전용 서버 |
+| 로더 | Fabric(+ Fabric API) 또는 Forge |
+| Fabric Loader | 26.x: 0.19.3 이상, 1.21.x: 0.16.0 이상, 1.20.x: 0.15.0 이상 |
+| Java | 26.x: 25, 1.21.x: 21, 1.20.x: 17 이상 |
 
 Minecraft 버전마다 요구하는 Java가 다르다. 26.x는 Java 21로 뜨지 않는다. 아래 설명에서 `<버전>`은 지원 버전 중 하나로 바꿔 읽는다.
 
@@ -44,13 +46,15 @@ https://meta.fabricmc.net/v2/versions/loader/<버전>/0.19.5/1.1.2/server/jar
 courier-server/
   mods/
     fabric-api-<버전에 맞는 것>.jar
-    courierpost-1.0.0+<버전>.jar
+    courierpost-fabric-1.0.1+<버전>.jar
 ```
 
 - Fabric API: https://modrinth.com/mod/fabric-api 에서 서버와 같은 버전용을 받는다
-- courierpost: 이 저장소의 `dist/courierpost-1.0.0+<버전>.jar`
+- courierpost: Modrinth 또는 직접 빌드한 `dist/`의 jar
 
 버전을 섞으면 Fabric이 로드를 거부한다.
+
+Forge 서버라면 Forge 인스톨러로 서버를 설치(`--installServer`)한 뒤 `mods/`에 `courierpost-forge-1.0.1+<버전>.jar` 하나만 넣으면 된다. Fabric API는 필요 없다.
 
 ### 4. EULA에 동의한다
 
@@ -177,39 +181,46 @@ java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 
 ## 지원 버전
 
-| Minecraft | 산출물 | Java | 설정 화면 | 닭 변종 |
-| --- | --- | --- | --- | --- |
-| 26.1.2 | `courierpost-1.0.0+26.1.2.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
-| 26.2 | `courierpost-1.0.0+26.2.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
-| 26.3 | `courierpost-1.0.0+26.3.jar` | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
-| 1.21.11 | `courierpost-1.0.0+1.21.11.jar` | 21 | 대화 상자 | 온대 / 온난 / 한랭 |
-| 1.21.1 | `courierpost-1.0.0+1.21.1.jar` | 21 | 채팅 메뉴 | 기본 닭 |
-| 1.20.1 | `courierpost-1.0.0+1.20.1.jar` | 17 | 채팅 메뉴 | 기본 닭 |
+| jar | Fabric 지원 범위 | Forge 지원 범위 | Java | 설정 화면 | 닭 변종 |
+| --- | --- | --- | --- | --- | --- |
+| `*-1.0.1+26.3.jar` | 26.3 | 26.3 | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| `*-1.0.1+26.2.jar` | 26.2 | 26.2 | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| `*-1.0.1+26.1.2.jar` | 26.1 ~ 26.1.2 | 26.1.2 | 25 | 대화 상자 | 온대 / 온난 / 한랭 |
+| `*-1.0.1+1.21.11.jar` | 1.21.11 | 1.21.11 | 21 | 대화 상자 | 온대 / 온난 / 한랭 |
+| `*-1.0.1+1.21.1.jar` | 1.21 ~ 1.21.1 | 1.21.1 | 21 | 채팅 메뉴 | 기본 닭 |
+| `*-1.0.1+1.20.1.jar` | 1.20 ~ 1.20.1 | 1.20.1 | 17 | 채팅 메뉴 | 기본 닭 |
 
-각 jar은 해당 버전에서만 로드된다. `fabric.mod.json`에 정확한 버전으로 고정돼 있으므로 섞어 쓰면 Fabric이 거부한다.
+`*`는 `courierpost-fabric` 또는 `courierpost-forge`다. 표에 적힌 범위는 모두 실제 서버에 접속해 배달, 피드백, 발전과제까지 확인한 버전이다. 범위 밖 버전은 메타데이터에서 막혀 있어 로더가 거부한다.
+
+1.20.2 ~ 1.20.6, 1.21.2 ~ 1.21.10은 지원하지 않는다. 이 구간은 발전과제, 텍스트 이벤트, 엔티티 생성 API가 달라 별도 호환 레이어가 필요하다.
 
 버전 간 차이는 위 두 열뿐이고 배달 규칙, 명령어, 설정 키, 발전과제는 모든 버전에서 같다. 대화 상자 API는 1.21.6에, 닭 변종은 1.21.5에 추가됐으므로 그 이전 버전은 각각 채팅 메뉴와 기본 닭으로 대신한다.
 
 ## 빌드
 
-```
-./gradlew collect -Pmc=26.2
-```
+버전 표는 `targets.gradle` 한 곳에 있고 세 빌드가 같이 읽는다. `-Pmc`로 대상 버전을 고르고, 산출물은 `dist/`에 모인다.
 
-`-Pmc`로 대상 버전을 고른다. 생략하면 `gradle.properties`의 `default_minecraft_version`을 쓴다. 산출물은 `dist/`에 모인다.
-
-전 버전을 만들려면 버전마다 한 번씩 돌린다.
+Fabric (루트, Gradle 9.5):
 
 ```
-./gradlew collect -Pmc=26.1.2
-./gradlew collect -Pmc=26.2
 ./gradlew collect -Pmc=26.3
-./gradlew collect -Pmc=1.21.11
-./gradlew collect -Pmc=1.21.1
-./gradlew collect -Pmc=1.20.1
 ```
 
-대상 버전에 맞는 JDK(25, 21, 17)가 설치돼 있어야 한다. Gradle 툴체인이 설치된 JDK 중에서 골라 쓴다.
+Forge 1.21.1 이상 (`forge/`, ForgeGradle 7, Gradle 9.7):
+
+```
+cd forge
+./gradlew collect -Pmc=26.3
+```
+
+Forge 1.20.1 (`forge-legacy/`, ForgeGradle 6, Gradle 8.8, JDK 21로 실행):
+
+```
+cd forge-legacy
+./gradlew collect
+```
+
+대상 버전에 맞는 JDK(25, 21, 17)가 설치돼 있어야 한다. Forge 빌드는 첫 실행 때 Minecraft를 디컴파일하므로 메모리가 부족하면 `JAVA_TOOL_OPTIONS=-Xmx4G`로 상한을 건다.
 
 개발 관련 상세 내용은 `HANDOFF.md`를 볼 것.
 

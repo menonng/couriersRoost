@@ -181,6 +181,39 @@ src/compat/packets/game              1.20.1                  ServerGamePacketLis
 
 ---
 
+## 3.7 로더 분리와 Forge
+
+로더 의존 코드는 `src/loader/` 아래에만 있다. 코어(`com.courierpost.CourierPost`)는 `initialize`, `serverStarted`, `serverTick`, `serverStopping`, `playerLeft`, `chat` 정적 진입점만 노출하고, 로더별 엔트리포인트가 이벤트를 받아 그대로 넘긴다.
+
+```
+src/loader/fabric                  DedicatedServerModInitializer, Fabric API 이벤트
+src/loader/forge/eventbus6         Forge 47 ~ 55 (1.20.1, 1.21.1): MinecraftForge.EVENT_BUS
+src/loader/forge/eventbus7         Forge 56 이상 (1.21.11, 26.x): Event.BUS.addListener, 취소는 Predicate 반환값
+src/loader/forge/resources         mods.toml, pack.mcmeta 템플릿
+```
+
+빌드는 세 개다. 버전 표(`targets.gradle`)는 공유한다.
+
+- 루트: Fabric. Loom 1.17(26.x, 리매핑 없음) / Loom 1.16(그 이전, intermediary).
+- `forge/`: ForgeGradle 7, Gradle 9.7. 1.21.1 이상. 실행 시 이름이 Mojang 이름이라 리매핑이 없다.
+- `forge-legacy/`: ForgeGradle 6 + MixinGradle, Gradle 8.8. 1.20.1 전용. 실행 시 SRG 이름이라 refmap(`courierpost.refmap.json`)을 생성하고 믹스인 설정에 `refmap` 키를 넣는다.
+
+Forge 쪽에서 따로 챙길 점:
+
+- Forge는 jar에 `pack.mcmeta`가 없으면 모드 데이터팩을 통째로 무시한다(발전과제가 안 뜬다). `targets.gradle`의 `forgePack`에 버전별 포맷이 있다.
+- Forge가 쓰는 Mixin 0.8.7은 호환 레벨 `JAVA_21`까지만 안다. Forge 빌드는 `compatibilityLevel`을 21로 상한한다. 26.x에서 그대로 동작한다.
+- 믹스인은 `server` 목록에만 있다. Forge 클라이언트에 실수로 설치돼도 믹스인이 적용되지 않고, 엔트리포인트도 `Dist.DEDICATED_SERVER`가 아니면 아무것도 하지 않는다.
+- 믹스인 설정은 jar 매니페스트 `MixinConfigs`로 로드된다. 개발 실행(`runServer`)에서는 이 경로를 확인할 수 없으므로 Forge 검증은 공식 인스톨러로 설치한 실배포 서버에서 했다.
+- Forge 디컴파일 단계는 힙을 8GB까지 키우다 메모리가 부족하면 죽는다. `JAVA_TOOL_OPTIONS=-Xmx4G`로 상한을 걸고 `--no-daemon`으로 한 버전씩 빌드한다.
+
+## 3.8 지원 범위 확장 방법
+
+어떤 jar이 인접 버전도 덮을 수 있는지는 "같은 레이어 조합을 그 버전으로 빌드했을 때 클래스 파일이 바이트 단위로 같은가"로 판단한다. `-Pmc=<대상> -Pprofile=<기존 프로필> -Papi=<대상용 Fabric API>`로 빌드하면 프로필의 레이어를 다른 버전에 대고 컴파일할 수 있다. 1.20 / 1.21 / 26.1 / 26.1.1이 이 방법으로 동일 판정을 받았고 실서버 프로브도 통과해서 `covers`에 들어갔다. 1.20.2 ~ 1.20.6과 1.21.2 ~ 1.21.10은 컴파일부터 실패한다(식별자 팩토리, `AdvancementType`, 발전과제 패킷 생성자, `HoverEvent`/`ClickEvent` 레코드화, `EntityType.create` 시그니처, 닭 패키지 이동 등).
+
+Forge 범위(`forgeCovers`)는 실서버 검증한 버전만 넣었다. 지금은 프로필당 한 버전이다.
+
+---
+
 ## 4. 빌드
 
 ```
@@ -326,6 +359,16 @@ Minecraft 클라이언트 없이, 원시 소켓으로 26.2 프로토콜을 직�
 - Fabric API가 로그인 쿼리(0x04)를 보낸다. `[트랜잭션 ID, false]`로 답해야 로그인이 진행된다.
 - client_information(0x08)은 play의 login 패킷을 받은 **뒤에** 보내야 한다. 그 전에 보내면 서버 디코더가 아직 LOGIN 상태라 `Index 8 out of bounds for length 3`으로 끊긴다.
 - chat_command는 서명 필드(timestamp, salt, 빈 서명 목록, LastSeen offset, 3바이트 비트셋)를 붙인다.
+
+### 6.7 범위 확장과 Forge 검증
+
+프로브를 패킷 ID에 덜 의존하게 다시 만들었다(`execute as Sender run msg Bob,Carol ...`를 RCON으로 보내고, 수신 패킷에서 문자열을 찾는다). 설정 단계 ID만 프로토콜 번호로 분기한다(<=765 구형, 777 이상은 select_known_packs가 0x0F).
+
+- Fabric 10개 버전 통과: 1.20, 1.20.1, 1.21, 1.21.1, 1.21.11, 26.1, 26.1.1, 26.1.2, 26.2, 26.3
+- Forge 6개 버전 통과(공식 인스톨러로 설치한 실배포 서버): 1.20.1, 1.21.1, 1.21.11, 26.1.2, 26.2, 26.3. 바닐라 클라이언트 접속 정상.
+- 발전과제는 플레이어당 한 번이라 같은 월드로 다시 돌리면 실패로 보인다. 다시 검증할 때는 `world/advancements` 또는 `world/players/advancements`의 해당 플레이어 파일을 지운다.
+- Forge의 RCON은 결과 텍스트가 없는 명령에 응답 패킷을 보내지 않는다. 프로브는 응답 대기를 3초로 끊는다.
+- 다른 프로세스가 25565를 쓰고 있을 수 있어 테스트 서버는 25566(RCON 25576)으로 띄웠다.
 
 ## 7. 검증하지 못한 것
 
