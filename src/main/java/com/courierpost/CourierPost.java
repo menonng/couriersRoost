@@ -4,31 +4,26 @@ import com.courierpost.bird.BirdManager;
 import com.courierpost.bird.BirdStorage;
 import com.courierpost.bird.CourierBird;
 import com.courierpost.chat.ChatHandler;
-import com.courierpost.command.CourierCommands;
 import com.courierpost.config.CourierConfig;
-import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
-public final class CourierPost implements DedicatedServerModInitializer {
+public final class CourierPost {
     public static final String MOD_ID = "courierpost";
     public static final Logger LOGGER = LoggerFactory.getLogger("Courier's Roost");
 
-    private static final Path CONFIG_PATH =
-            FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + ".json");
-
+    private static Path configPath;
     private static CourierConfig config = new CourierConfig();
     private static BirdManager manager;
+
+    private CourierPost() {
+    }
 
     public static CourierConfig config() {
         return config;
@@ -39,47 +34,34 @@ public final class CourierPost implements DedicatedServerModInitializer {
     }
 
     public static void reloadConfig() {
-        config.copyFrom(CourierConfig.load(CONFIG_PATH));
+        config.copyFrom(CourierConfig.load(configPath));
     }
 
     public static void saveConfig() {
-        config.save(CONFIG_PATH);
+        config.save(configPath);
     }
 
-    @Override
-    public void onInitializeServer() {
-        config = CourierConfig.load(CONFIG_PATH);
-
-        CommandRegistrationCallback.EVENT.register((dispatcher, access, environment) ->
-                CourierCommands.register(dispatcher));
-
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            manager = new BirdManager(server);
-            if (config.saveBirds) {
-                List<CourierBird> restored = BirdStorage.load(server);
-                manager.addAll(restored);
-                LOGGER.info("Restored {} courier birds", restored.size());
-            }
-        });
-
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (manager != null) {
-                manager.tick();
-            }
-        });
-
-        ServerLifecycleEvents.SERVER_STOPPING.register(this::shutdown);
-
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
-                ChatHandler.clearCooldown(handler.player.getUUID()));
-
-        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((message, sender, params) -> {
-            ChatHandler.handleGlobal(sender, message.signedContent());
-            return false;
-        });
+    public static void initialize(Path configDirectory) {
+        configPath = configDirectory.resolve(MOD_ID + ".json");
+        config = CourierConfig.load(configPath);
     }
 
-    private void shutdown(MinecraftServer server) {
+    public static void serverStarted(MinecraftServer server) {
+        manager = new BirdManager(server);
+        if (config.saveBirds) {
+            List<CourierBird> restored = BirdStorage.load(server);
+            manager.addAll(restored);
+            LOGGER.info("Restored {} courier birds", restored.size());
+        }
+    }
+
+    public static void serverTick() {
+        if (manager != null) {
+            manager.tick();
+        }
+    }
+
+    public static void serverStopping(MinecraftServer server) {
         if (manager == null) {
             return;
         }
@@ -88,5 +70,13 @@ public final class CourierPost implements DedicatedServerModInitializer {
         }
         manager.despawnAll();
         manager = null;
+    }
+
+    public static void playerLeft(UUID playerId) {
+        ChatHandler.clearCooldown(playerId);
+    }
+
+    public static void chat(ServerPlayer sender, String content) {
+        ChatHandler.handleGlobal(sender, content);
     }
 }

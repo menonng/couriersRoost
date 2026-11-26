@@ -1,82 +1,74 @@
 # Courier's Roost
 
-No message arrives instantly anymore. Every chat message is carried by a courier chicken that takes off from the sender, flies across the world and lands at the recipient's feet. Distance is latency.
+Chat messages on your server get delivered by chickens. When someone sends a message, a courier chicken takes off from them and flies to the recipient, and the message shows up when it lands. Players far away from each other wait longer.
 
-**Server-side only.** Players join with a vanilla client. No client mod, no resource pack.
+Only the server needs the mod. Players can join with an unmodded client.
 
-## How it works
+## Features
 
-- Global chat, `/msg` `/w` `/tell` and `/teammsg` `/tm` are all delivered by bird.
-- Each bird spawns at the sender, climbs, flies toward the recipient's current position and descends to them. When it lands, the message appears with a small burst of colored sparks and a chime.
-- The recipient keeps moving? The bird follows them.
-- Delivery time = base delay + distance / speed. With the defaults (8 s base, 25 blocks/s) a player 500 blocks away waits about 28 seconds.
-- Birds fly slower in the Nether, in rain and in thunderstorms.
-- Cross-dimension messages: the bird appears at the destination dimension's origin and flies from there, or, with coordinate conversion on, at the scaled Nether/Overworld position.
-- Birds can occasionally die on the way. The sender is told the message was lost. An optional silent-loss chance is also available.
-- Birds in flight survive server restarts.
-- Couriers are invulnerable, never lay eggs and give up after their lifetime runs out.
+- Works for global chat, `/msg`, `/w`, `/tell`, `/teammsg` and `/tm`
+- The chicken follows the recipient if they move, and lands at their feet with a few sparks and a chime
+- Delivery time is a base delay plus distance divided by speed. With default settings, a player 500 blocks away gets the message in about 28 seconds
+- Chickens fly slower in the Nether and in bad weather
+- Messages between dimensions work too
+- A chicken can occasionally die on the way, and the sender gets told the message was lost (configurable, can be turned off)
+- Chickens in flight are saved when the server restarts
+- Couriers can't be killed and don't lay eggs
 
-## Whispering to several players
-
-`/msg` accepts a comma-separated list of names, with tab completion for each name:
+You can whisper to several players at once by separating names with commas. Tab completion works for each name:
 
 ```
-/msg Alex,Steve,Notch Meet at the village
+/msg Alex,Steve,Notch meet at the village
 ```
-
-Each recipient gets their own bird.
 
 ## Commands
 
-| Command | Permission | Description |
-| --- | --- | --- |
-| `/birdconfig` | 4 | Opens a settings screen (vanilla dialog on 1.21.6+, clickable chat menu on older versions) |
-| `/birdconfig get <key>` | 4 | Read a value |
-| `/birdconfig set <key> <value>` | 4 | Change a value, applied immediately |
-| `/birdconfig reload` | 4 | Reload `config/courierpost.json` |
-| `/birds` | 4 | List every bird in flight |
-| `/birdtrack` | 4 | List the birds you sent |
+All commands need permission level 4.
 
-## Configuration
+| Command | What it does |
+| --- | --- |
+| `/birdconfig` | Opens the settings menu (a dialog window on 1.21.6 and newer, clickable chat on older versions) |
+| `/birdconfig get <key>` | Shows a setting |
+| `/birdconfig set <key> <value>` | Changes a setting right away |
+| `/birdconfig reload` | Reloads `config/courierpost.json` |
+| `/birds` | Lists every chicken currently flying |
+| `/birdtrack` | Lists the chickens you sent |
 
-`config/courierpost.json`
+## Config
 
-| Key | Default | Meaning |
+Stored in `config/courierpost.json`.
+
+| Key | Default | Description |
 | --- | --- | --- |
 | `base_dimension_delay` | 8 | Seconds added to every message |
-| `bird_speed` | 25.0 | Blocks per second |
-| `nether_speed` | 16.0 | Blocks per second in the Nether |
-| `speed_variation` | 0.2 | Random speed spread per bird (0.2 = ±20%) |
-| `rain_multiplier` | 0.75 | Speed multiplier in rain |
-| `thunder_multiplier` | 0.5 | Speed multiplier in thunderstorms |
-| `bird_death_chance` | 0.002 | Chance per flight that the bird dies and the sender is notified |
-| `lost_chance` | 0.0 | Chance the message disappears silently |
-| `use_coordinate_conversion` | false | Scale coordinates between Nether and Overworld instead of starting at the origin |
-| `deliver_offline_messages` | false | Keep birds for recipients who log out instead of discarding them |
-| `save_birds` | true | Save birds in flight across restarts |
-| `bird_max_lifetime` | 4800 | Ticks before an undelivered bird gives up |
-| `show_bird` | true | Spawn visible chicken entities |
-| `global_chat_cooldown` | 10 | Seconds between global messages (operators exempt) |
+| `bird_speed` | 25.0 | Flight speed in blocks per second |
+| `nether_speed` | 16.0 | Flight speed in the Nether |
+| `speed_variation` | 0.2 | Random speed difference between chickens (0.2 means up to 20%) |
+| `rain_multiplier` | 0.75 | Speed multiplier while raining |
+| `thunder_multiplier` | 0.5 | Speed multiplier during thunderstorms |
+| `bird_death_chance` | 0.002 | Chance a chicken dies on the way (sender is notified) |
+| `lost_chance` | 0.0 | Chance a message silently disappears |
+| `use_coordinate_conversion` | false | Scale coordinates between the Nether and the Overworld. When off, chickens entering another dimension start from 0, 0 |
+| `deliver_offline_messages` | false | Keep chickens flying to players who logged out |
+| `save_birds` | true | Save chickens in flight across restarts |
+| `bird_max_lifetime` | 4800 | Ticks before an undelivered chicken gives up |
+| `show_bird` | true | Show the chicken entities |
+| `global_chat_cooldown` | 10 | Seconds between global messages (operators are exempt) |
 
-### Large servers
-
-Simulating the birds costs almost nothing. What costs TPS is vanilla entity tracking when hundreds of visible chickens are near many players. On a busy server, run `/birdconfig set show_bird false`. Delivery keeps working exactly the same, only the entities are hidden.
+If you run a big server and see TPS drop with lots of messages in the air, set `show_bird` to false. Messages are still delivered with the same timing, only the chickens are hidden. Most of the cost comes from sending hundreds of chicken entities to nearby players, not from the mod itself.
 
 ## Languages
 
-English, Korean and Japanese, chosen per player from their client language. The mod's advancement is also localized per player.
+English, Korean and Japanese. Each player sees text in their own client language.
 
-## Supported versions
+## Versions
 
-| Minecraft | Java | Settings screen | Chicken variants |
-| --- | --- | --- | --- |
-| 26.1.2, 26.2, 26.3 | 25 | Dialog | Temperate, warm, cold |
-| 1.21.11 | 21 | Dialog | Temperate, warm, cold |
-| 1.21.1 | 21 | Chat menu | Standard chicken |
-| 1.20.1 | 17 | Chat menu | Standard chicken |
+Download the file that matches your server's Minecraft version and loader. The Fabric version needs Fabric API.
 
-Requires Fabric API. Download the file that matches your server's Minecraft version.
+On versions older than 1.21.6 the settings menu is clickable chat instead of a dialog window, and on versions older than 1.21.5 couriers are regular chickens instead of the temperate, warm and cold variants.
 
 ---
 
-The slow-messaging idea is inspired by the Roost app. This project is unofficial and is not affiliated with or endorsed by Roost.
+This mod was vibe coded: written with an AI coding assistant, then tested on real servers for every supported version.
+
+The slow-message idea was inspired by the Roost app. Courier's Roost is an independent fan project and is not affiliated with, endorsed by or connected to Roost or its developers.

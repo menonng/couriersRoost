@@ -2,7 +2,7 @@
   "required": true,
   "package": "com.courierpost.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
-  "mixins": ${mixins},
+  "server": ${mixins},
   "injectors": {
     "defaultRequire": 1
   }

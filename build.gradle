@@ -3,75 +3,34 @@ plugins {
     id 'net.fabricmc.fabric-loom' apply false
 }
 
-def targets = [
-        "26.1.2": [
-                api   : "0.155.3+26.1.2",
-                java  : 25,
-                loader: "0.19.3",
-                mojmap: false,
-                layers: ["advancements/legacy", "entity/v26_1", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
-        ],
-        "26.2": [
-                api   : "0.161.0+26.2",
-                java  : 25,
-                loader: "0.19.3",
-                mojmap: false,
-                layers: ["advancements/legacy", "entity/v26_2", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
-        ],
-        "26.3": [
-                api   : "0.161.0+26.3",
-                java  : 25,
-                loader: "0.19.3",
-                mojmap: false,
-                layers: ["advancements/record", "entity/v26_3", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
-        ],
-        "1.21.11": [
-                api   : "0.141.6+1.21.11",
-                java  : 21,
-                loader: "0.16.0",
-                mojmap: true,
-                layers: ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
-        ],
-        "1.21.1": [
-                api   : "0.116.17+1.21.1",
-                java  : 21,
-                loader: "0.16.0",
-                mojmap: true,
-                layers: ["advancements/old", "advancementnames/old", "entity/mc1_20", "mixins/mc1_20", "platform/old", "ui/chat", "chicken/old", "packets/common"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"]',
-        ],
-        "1.20.1": [
-                api   : "0.92.12+1.20.1",
-                java  : 17,
-                loader: "0.15.0",
-                mojmap: true,
-                layers: ["advancements/ancient", "advancementnames/ancient", "entity/mc1_20", "mixins/mc1_20", "platform/ancient", "ui/chat", "chicken/old", "packets/game"],
-                mixins: '["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerGamePacketListenerImplMixin", "ServerPlayerMixin", "TeamMsgCommandMixin"]',
-                pluralData: true,
-        ],
-]
+apply from: 'targets.gradle'
 
 def minecraftVersion = (project.findProperty("mc") ?: project.default_minecraft_version).toString()
-if (!targets.containsKey(minecraftVersion)) {
-    throw new GradleException("Unsupported Minecraft version '${minecraftVersion}'. Supported: ${targets.keySet().join(', ')}")
+def profile = (project.findProperty("profile") ?: minecraftVersion).toString()
+if (!courierTargets.containsKey(profile)) {
+    throw new GradleException("Unsupported Minecraft version '${profile}'. Supported: ${courierTargets.keySet().join(', ')}")
 }
-def target = targets[minecraftVersion]
+def target = new LinkedHashMap(courierTargets[profile])
+if (project.hasProperty("api")) {
+    target.fabricApi = project.property("api").toString()
+}
+if (project.hasProperty("java")) {
+    target.java = project.property("java").toString().toInteger()
+}
+def covered = profile == minecraftVersion ? target.covers : [minecraftVersion]
 
 apply plugin: target.mojmap ? 'fabric-loom' : 'net.fabricmc.fabric-loom'
 
 target.layers.each { layer ->
     sourceSets.main.java.srcDir "src/compat/${layer}/java"
 }
+sourceSets.main.java.srcDir "src/loader/fabric/java"
 
 version = "${project.mod_version}+${minecraftVersion}"
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = "${project.archives_base_name}-fabric"
 }
 
 loom {
@@ -92,22 +51,21 @@ dependencies {
             officialMojangMappings()
         }
         modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-        modImplementation "net.fabricmc.fabric-api:fabric-api:${target.api}"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${target.fabricApi}"
     } else {
         implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-        implementation "net.fabricmc.fabric-api:fabric-api:${target.api}"
+        implementation "net.fabricmc.fabric-api:fabric-api:${target.fabricApi}"
     }
 }
 
 processResources {
-    def modVersion = project.version
     def replacements = [
-            "version"          : modVersion,
-            "minecraft_version": minecraftVersion,
-            "java_version"     : target.java.toString(),
-            "loader_version"   : target.loader,
-            "mixins"           : target.mixins,
-            "icon_key"         : target.pluralData ? "item" : "id",
+            "version"        : project.version.toString(),
+            "minecraft_range": fabricRange(covered),
+            "java_version"   : target.java.toString(),
+            "loader_version" : target.loader,
+            "mixins"         : mixinList(target.mixins),
+            "icon_key"       : target.pluralData ? "item" : "id",
     ]
     inputs.properties replacements
 

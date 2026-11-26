@@ -1,0 +1,87 @@
+ext.courierTargets = [
+        "26.1.2" : [
+                covers    : ["26.1", "26.1.1", "26.1.2"],
+                forgeCovers: ["26.1.2"],
+                fabricApi : "0.155.3+26.1.2",
+                forge     : "64.1.5",
+                eventbus  : "eventbus7",
+                java      : 25,
+                loader    : "0.19.3",
+                mojmap    : false,
+                layers    : ["advancements/legacy", "entity/v26_1", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"],
+        ],
+        "26.2"   : [
+                covers    : ["26.2"],
+                forgeCovers: ["26.2"],
+                fabricApi : "0.161.0+26.2",
+                forge     : "65.1.5",
+                eventbus  : "eventbus7",
+                java      : 25,
+                loader    : "0.19.3",
+                mojmap    : false,
+                layers    : ["advancements/legacy", "entity/v26_2", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"],
+        ],
+        "26.3"   : [
+                covers    : ["26.3"],
+                forgeCovers: ["26.3"],
+                fabricApi : "0.161.0+26.3",
+                forge     : "66.1.9",
+                eventbus  : "eventbus7",
+                java      : 25,
+                loader    : "0.19.3",
+                mojmap    : false,
+                layers    : ["advancements/record", "entity/v26_3", "mixins/v26", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MobMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"],
+        ],
+        "1.21.11": [
+                covers    : ["1.21.11"],
+                forgeCovers: ["1.21.11"],
+                fabricApi : "0.141.6+1.21.11",
+                forge     : "61.2.4",
+                eventbus  : "eventbus7",
+                java      : 21,
+                loader    : "0.16.0",
+                mojmap    : true,
+                layers    : ["advancements/legacy", "entity/mc1_21", "mixins/mc1_21", "platform/modern", "advancementnames/modern", "ui/dialog", "chicken/modern", "packets/common"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"],
+        ],
+        "1.21.1" : [
+                covers    : ["1.21", "1.21.1"],
+                forgeCovers: ["1.21.1"],
+                fabricApi : "0.116.17+1.21.1",
+                forge     : "52.1.20",
+                eventbus  : "eventbus6",
+                java      : 21,
+                loader    : "0.16.0",
+                mojmap    : true,
+                layers    : ["advancements/old", "advancementnames/old", "entity/mc1_20", "mixins/mc1_20", "platform/old", "ui/chat", "chicken/old", "packets/common"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerCommonPacketListenerImplMixin", "TeamMsgCommandMixin"],
+        ],
+        "1.20.1" : [
+                covers    : ["1.20", "1.20.1"],
+                forgeCovers: ["1.20.1"],
+                fabricApi : "0.92.12+1.20.1",
+                forge     : "47.4.28",
+                eventbus  : "eventbus6",
+                java      : 17,
+                loader    : "0.15.0",
+                mojmap    : true,
+                pluralData: true,
+                layers    : ["advancements/ancient", "advancementnames/ancient", "entity/mc1_20", "mixins/mc1_20", "platform/ancient", "ui/chat", "chicken/old", "packets/game"],
+                mixins    : ["ChickenMixin", "LivingEntityMixin", "MsgCommandMixin", "ServerGamePacketListenerImplMixin", "ServerPlayerMixin", "TeamMsgCommandMixin"],
+        ],
+]
+
+ext.fabricRange = { List<String> versions ->
+    versions.size() == 1 ? versions[0] : ">=${versions.first()} <=${versions.last()}".toString()
+}
+
+ext.forgeRange = { List<String> versions ->
+    versions.size() == 1 ? "[${versions[0]}]".toString() : "[${versions.first()},${versions.last()}]".toString()
+}
+
+ext.mixinList = { List<String> names ->
+    "[" + names.collect { "\"${it}\"" }.join(", ") + "]"
+}
